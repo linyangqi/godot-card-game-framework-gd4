@@ -4,7 +4,7 @@
 # And the game name in the Project > Settings should match the
 # game name set when running CGF-Stats.
 class_name GameStats
-extends Reference
+extends RefCounted
 
 # Stores the unique id for this match. It is used to submit final results
 var game_uuid : String
@@ -28,7 +28,7 @@ func _init(deck = {}):
 	else:
 		thread = Thread.new()
 		# warning-ignore:return_value_discarded
-		thread.start(self, "call_api", userdata)
+		thread.start(Callable(self,"call_api").bind(userdata))
 
 # Submits results of the game (victory/defeat etc) to the CFG-Stats
 func complete_game(game_data):
@@ -43,7 +43,7 @@ func complete_game(game_data):
 			call_api(userdata)
 		else:
 			# warning-ignore:return_value_discarded
-			thread.start(self, "call_api", userdata)
+			thread.start(Callable(self,"call_api").bind(userdata))
 		# Put a thread.wait_to_finish() somewhere before you reset the whole game
 		# To avoid leaving garbage
 
@@ -69,9 +69,9 @@ func call_api(userdata):
 		if not OS.has_feature("web"):
 			OS.delay_msec(500)
 		else:
-			# Synchronous HTTP requests are not supported on the web,
+			# Synchronous HTTP requests are not supported checked the web,
 			# so wait for the next main loop iteration.
-			yield(Engine.get_main_loop(), "idle_frame")
+			await Engine.get_main_loop().idle_frame
 
 	# Could not connect
 	assert(http.get_status() == HTTPClient.STATUS_CONNECTED)
@@ -114,9 +114,9 @@ func call_api(userdata):
 		if not OS.has_feature("web"):
 			OS.delay_msec(500)
 		else:
-			# Synchronous HTTP requests are not supported on the web,
+			# Synchronous HTTP requests are not supported checked the web,
 			# so wait for the next main loop iteration.
-			yield(Engine.get_main_loop(), "idle_frame")
+			await Engine.get_main_loop().idle_frame
 	# Make sure request finished well.
 	assert(http.get_status() == HTTPClient.STATUS_BODY\
 			or http.get_status() == HTTPClient.STATUS_CONNECTED)
@@ -127,7 +127,7 @@ func call_api(userdata):
 #		print_debug("**headers:\\n", headers) # Show headers.
 		if http.get_response_code() == 201:
 			# Array that will hold the data.
-			var rb = PoolByteArray()
+			var rb = PackedByteArray()
 			while http.get_status() == HTTPClient.STATUS_BODY:
 				# While there is body left to be read
 				http.poll()
@@ -138,9 +138,9 @@ func call_api(userdata):
 						# Got nothing, wait for buffers to fill a bit.
 						OS.delay_usec(1000)
 					else:
-						# Synchronous HTTP requests are not supported on the web,
+						# Synchronous HTTP requests are not supported checked the web,
 						# so wait for the next main loop iteration.
-						yield(Engine.get_main_loop(), "idle_frame")
+						await Engine.get_main_loop().idle_frame
 				else:
 					# Append to read buffer.
 					rb = rb + chunk

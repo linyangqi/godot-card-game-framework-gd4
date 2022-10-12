@@ -29,8 +29,8 @@ var mouse_pointer: MousePointer
 func _ready() -> void:
 	add_to_group("board")
 	if not cfc.are_all_nodes_mapped:
-		yield(cfc, "all_nodes_mapped")
-	mouse_pointer = load(CFConst.PATH_MOUSE_POINTER).instance()
+		await cfc.all_nodes_mapped
+	mouse_pointer = load(CFConst.PATH_MOUSE_POINTER).instantiate()
 	add_child(mouse_pointer)
 	for container in get_tree().get_nodes_in_group("piles"):
 		container.re_place()
@@ -46,14 +46,14 @@ func _physics_process(delta) -> void:
 	if _UT_interpolation_requested:
 		if _t < 1:
 			_t += delta * _UT_mouse_speed
-			_UT_mouse_position = _UT_current_mouse_position.linear_interpolate(
+			_UT_mouse_position = _UT_current_mouse_position.lerp(
 					_UT_target_mouse_position, _t)
 		else:
 			_t = 0
 			_UT_interpolation_requested = false
 
 
-# This function is called by unit testing to simulate mouse movement on the board
+# This function is called by unit testing to simulate mouse movement checked the board
 func _UT_interpolate_mouse_move(newpos: Vector2,
 		startpos := Vector2(-1,-1), mouseSpeed := 3) -> void:
 #	print_debug(newpos, _UT_mouse_position)
@@ -73,7 +73,7 @@ func get_all_cards() -> Array:
 		if obj as Card: cardsArray.append(obj)
 	return(cardsArray)
 
-# Overridable function which returns all objects on the table which can
+# Overridable function which returns all objects checked the table which can
 # be used as subjects by the scripting engine.
 func get_all_scriptables() -> Array:
 	return(get_all_cards())

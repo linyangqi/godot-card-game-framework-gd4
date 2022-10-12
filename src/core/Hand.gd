@@ -13,7 +13,7 @@ enum ExcessCardsBehaviour {
 }
 
 # The maximum amount of cards allowed to draw in this hand
-# Offsets the hand position based on the configuration
+# Offsets the hand position based checked the configuration
 var bottom_margin: float = card_size.y * CFConst.BOTTOM_MARGIN_MULTIPLIER
 # During _read(), this variable will be populated with a node from cfc.NMAP
 # according to the name specified in excess_discard_pile_name
@@ -22,21 +22,21 @@ var _excess_discard_pile : Pile = null
 # Specify the name of the pile to discard excess cards
 # When "Discard Drawn" or "Discard Oldest" is specified
 # in excess_cards
-export var excess_discard_pile_name : String
+@export var excess_discard_pile_name : String
 # The maximum hand size. What happens if this is exceeded is determined
 # by `excess_cards`
-export var hand_size := 10
+@export var hand_size := 10
 # Determines the behaviour of cards over the hand limit
 # * DISALLOWED: When hand is at limit, no more cards will be added to it
 # * ALLOWED: More cards than the limit can be added to the hand. The developer
-#	has to provide some logic on how to deal with the excess
+#	has to provide some logic checked how to deal with the excess
 # * "DISCARD_DRAWN": When cards exceed the limit, the new card will be
 #	automatically discarded
 # * "DISCARD_OLDEST": When cards exceed the limit, the oldest card in the
 #	hand will be automatically discarded
-export(ExcessCardsBehaviour) var excess_cards
+@export var excess_cards: ExcessCardsBehaviour
 
-onready var _counter_cards = $Counters/Cards
+@onready var _counter_cards = $Counters/Cards
 
 func _ready() -> void:
 	add_to_group("hands")
@@ -81,7 +81,7 @@ func get_leftmost_card() -> Card:
 func shuffle_cards() -> void:
 	# When shuffling the hand, we also want to show the player
 	# So execute the parent function, then call each card to reorg itself
-	.shuffle_cards()
+	super.shuffle_cards()
 	for card in get_all_cards():
 		card.interruptTweening()
 		card.reorganize_self()
@@ -132,20 +132,20 @@ func get_final_placement_node(card: Card) -> Node:
 # CardContainers exist in the same row/column
 func re_place() -> void:
 	# This variable records how the start position of the hand
-	# should be modified, depending on how many other containers
-	# are on its left
+	# should be modified, depending checked how many other containers
+	# are checked its left
 	var start_pos_left := 0.0
 	# This variable records how the total size of the hand
-	# should be shrunk, depending on how many other containers
-	# are on its row
+	# should be shrunk, depending checked how many other containers
+	# are checked its row
 	var others_rect_x := 0.0
 	# same as start_pos_left but for vertically aligned hands
 	var start_pos_top := 0.0
 	# same as others_rect_x but for vertically aligned hands
 	var others_rect_y := 0.0
-	# First we put the hand in its expected location, based on nothing
+	# First we put the hand in its expected location, based checked nothing
 	# else but its anchor
-	.re_place()
+	super.re_place()
 	# Hook for the debugger
 	# I could figure this out from the hand anchor, but this way
 	# is easier to understand.
@@ -157,46 +157,46 @@ func re_place() -> void:
 			for other in get_tree().get_nodes_in_group(group):
 				# For top/bottom placements, we modify the x-axis of the hand
 				if group in ["top", "bottom"] and other != self:
-					# If the container we're checking is on the left
+					# If the container we're checking is checked the left
 					# Of the hand, we need to adjust the hand's starting position
 					if "left" in other.get_groups() \
-							and other.position.x + other.control.rect_size.x > start_pos_left:
-						start_pos_left = other.position.x + other.control.rect_size.x
+							and other.position.x + other.control.size.x > start_pos_left:
+						start_pos_left = other.position.x + other.control.size.x
 					# For every other container in the same row (top or bottom)
-					# we sum their rect_size.x together
+					# we sum their size.x together
 					if other.accumulated_shift.y == 0:
-						others_rect_x += other.control.rect_size.x
+						others_rect_x += other.control.size.x
 				# for left/right placements, we modify the y-axis of the hand
 				# as we assume it's oriented vertically
 				if group in ["left", "right"]:
-					# If the container we're checking is on top
+					# If the container we're checking is checked top
 					# of the hand, we need to adjust the hand's starting position
 					if "top" in other.get_groups() \
-							and other.position.y + other.control.rect_size.y > start_pos_top:
-						start_pos_top += other.position.y + other.control.rect_size.y
+							and other.position.y + other.control.size.y > start_pos_top:
+						start_pos_top += other.position.y + other.control.size.y
 					# For every other container in the same column (left or right)
-					# we sum their rect_size.y together
-					others_rect_y += other.control.rect_size.y
+					# we sum their size.y together
+					others_rect_y += other.control.size.y
 	# If the hand is oriented horizontally, we reduce its size by other
-	# containers on the same row
+	# containers checked the same row
 	if "top" in get_groups() or "bottom" in get_groups():
-		$Control.rect_size.x = get_viewport().size.x - others_rect_x
+		$Control.size.x = get_viewport().size.x - others_rect_x
 		position.x = start_pos_left
-		$Control.rect_size.y = card_size.y
+		$Control.size.y = card_size.y
 	# If the hand is oriented vertically, we reduce its size by other
-	# containers on the same column
+	# containers checked the same column
 	if "left" in get_groups() or "right" in get_groups():
-		$Control.rect_size.y = get_viewport().size.y - others_rect_y
+		$Control.size.y = get_viewport().size.y - others_rect_y
 		position.x = start_pos_top
-		$Control.rect_size.x = card_size.x
+		$Control.size.x = card_size.x
 	if placement == Anchors.CONTROL:
 		# This yield allows the other control nodes to set their side
 		# In which case the hand, which is typically set to expand vertically
 		# doesn't expand too much
-		yield(get_tree(), "idle_frame")
-		$Control.call_deferred("set_size", get_parent().rect_size)
-#		$Control.rect_size = get_parent().rect_size
-#		print_debug(get_parent().rect_size)
+		await get_tree().idle_frame
+		$Control.call_deferred("set_size", get_parent().size)
+#		$Control.size = get_parent().size
+#		print_debug(get_parent().size)
 	# We also need to adjust the hand's collision area to match its new size
 	call_deferred("_adjust_collision_area")
 
@@ -213,14 +213,14 @@ func re_place() -> void:
 	# hand-size.
 	call_deferred("_init_control_size")
 	if not cfc.ut:
-		yield(get_tree(), "idle_frame")
+		await get_tree().idle_frame
 	for c in get_all_cards():
 		c.position = c.recalculate_position()
 
 func _adjust_collision_area() -> void:
-	$CollisionShape2D.shape.extents = $Control.rect_size / 2
-	$CollisionShape2D.position = $Control.rect_size / 2
-	highlight.rect_size = $Control.rect_size
+	$CollisionShape2D.shape.extents = $Control.size / 2
+	$CollisionShape2D.position = $Control.size / 2
+	highlight.size = $Control.size
 
 # Overridable function for counting cards
 func _get_modified_card_count() -> int:

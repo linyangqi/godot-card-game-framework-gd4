@@ -1,13 +1,13 @@
 # This class contains all the functionality required to perform
-# full rules enforcement on any card.
+# full rules enforcement checked any card.
 #
-# The automation is based on [ScriptTask]s. Each such "task" performs a very specific
-# manipulation of the board state, based on using existing functions
+# The automation is based checked [ScriptTask]s. Each such "task" performs a very specific
+# manipulation of the board state, based checked using existing functions
 # in the object manipulated. Therefore each task function effectively provides a text-based API.
 #
 # This class is loaded by each card invidually during execution.
 class_name ScriptingEngine
-extends Reference
+extends RefCounted
 
 const _ASK_INTEGER_SCENE_FILE = CFConst.PATH_CORE + "AskInteger.tscn"
 const _ASK_INTEGER_SCENE = preload(_ASK_INTEGER_SCENE_FILE)
@@ -40,7 +40,7 @@ var snapshot_id : float = 0
 
 
 # Simply initiates the [run_next_script()](#run_next_script) loop
-func _init(state_scripts: Array,
+func _init():ay,
 		owner,
 		trigger_object: Node,
 		trigger_details: Dictionary) -> void:
@@ -61,7 +61,7 @@ func _init(state_scripts: Array,
 					[])
 			repeat = per_msg.found_things
 		# If there are no targets to repeat,  and the task was targetting
-		# It means it might have fired off of a dragging action, and we want to avoid
+		# It means it might have fired unchecked of a dragging action, and we want to avoid
 		# it triggering when the player tries to drag it from hand and doing nothing.
 		if repeat == 0 \
 				and cfc.card_drag_ongoing == owner\
@@ -95,7 +95,7 @@ func costs_dry_run() -> bool:
 # then turns each array element into a [ScriptTask] object and
 # send it to the appropriate tasks.
 func execute(_run_type := CFInt.RunType.NORMAL) -> void:
-	snapshot_id = rand_range(1,10000000)
+	snapshot_id = randf_range(1,10000000)
 	all_tasks_completed = false
 	run_type = _run_type
 	var prev_subjects := []
@@ -141,10 +141,10 @@ func execute(_run_type := CFInt.RunType.NORMAL) -> void:
 				if next_task.subjects.size() > 0:
 					prev_subjects = next_task.subjects
 			script.prime(prev_subjects,run_type,stored_integer)
-			# In case the task involves targetting, we need to wait on further
+			# In case the task involves targetting, we need to wait checked further
 			# execution until targetting has completed
 			if not script.is_primed:
-				yield(script,"primed")
+				await script.primed
 		if script.is_primed:
 			_pre_task_exec(script)
 			#print("Scripting Subjects: " + str(script.subjects)) # Debug
@@ -168,7 +168,7 @@ func execute(_run_type := CFInt.RunType.NORMAL) -> void:
 					}
 				var retcode = call(script.script_name, script)
 				if retcode is GDScriptFunctionState:
-					retcode = yield(retcode, "completed")
+					retcode = await retcode.completed
 				# We set the previous subjects only after the execution, because some tasks
 				# might change the previous subjects for the future tasks
 				if not script.get_property(SP.KEY_PROTECT_PREVIOUS):
@@ -183,7 +183,7 @@ func execute(_run_type := CFInt.RunType.NORMAL) -> void:
 						# about a task they cannot perform anyway.
 						var confirm_return = script.check_confirm()
 						if confirm_return is GDScriptFunctionState: # Still working.
-							yield(confirm_return, "completed")
+							await confirm_return.completed
 						if not script.is_accepted:
 							can_all_costs_be_paid = false
 			# If a cost script is not valid
@@ -191,7 +191,7 @@ func execute(_run_type := CFInt.RunType.NORMAL) -> void:
 			# Then we consider the costs cannot be paid.
 			# However is the task was merely skipped (because filters didn't match)
 			# we don't consider the whole script failed.
-			# This allows us to have conditional costs based on the board state
+			# This allows us to have conditional costs based checked the board state
 			# which will not abort the overall script.
 			elif not script.is_valid and script.is_cost:
 				can_all_costs_be_paid = false
@@ -224,7 +224,7 @@ func execute(_run_type := CFInt.RunType.NORMAL) -> void:
 #	print_debug(str(card_owner) + 'Scripting: All done!') # Debug
 	all_tasks_completed = true
 	emit_signal("tasks_completed")
-	# checking costs on multiple targeted cards in the same script,
+	# checking costs checked multiple targeted cards in the same script,
 	# is not supported at the moment due to the exponential complexities
 #	elif costs_dry_run() and ta.target_dry_run_card and \
 #				scripts_queue[0].get(SP.KEY_SUBJECT) == "target":
@@ -305,7 +305,7 @@ func move_card_to_container(script: ScriptTask) -> int:
 			# But we don't consider it a failed cost (as most games allow you
 			# to try and draw more cards when you're full but just won't draw any)
 			card.move_to(dest_container,dest_index, null, tags)
-			yield(script.owner.get_tree().create_timer(0.05), "timeout")
+			await script.owner.get_tree().create_timer(0.05).timeout
 	if script.get_property(SP.KEY_STORE_INTEGER):
 		stored_integer = script.subjects.size()
 	return(retcode)
@@ -342,7 +342,7 @@ func move_card_to_board(script: ScriptTask) -> int:
 				for card in script.subjects:
 					slot = grid.find_available_slot()
 					# We need a small delay, to allow a potential new slot to instance
-					yield(script.owner.get_tree().create_timer(0.05), "timeout")
+					await script.owner.get_tree().create_timer(0.05).timeout
 					if slot:
 						# Setting the highlight lets the move_to() method
 						# Know we're moving into that slot
@@ -357,7 +357,7 @@ func move_card_to_board(script: ScriptTask) -> int:
 		var board_position = script.get_property(SP.KEY_BOARD_POSITION)
 		var count = 0
 		for card in script.subjects:
-			# To avoid overlapping on the board, we spawn the cards
+			# To avoid overlapping checked the board, we spawn the cards
 			# Next to each other.
 			board_position.x += \
 					count * card.canonical_size.x * card.play_area_scale
@@ -365,11 +365,11 @@ func move_card_to_board(script: ScriptTask) -> int:
 			# We assume cards moving to board want to be face-up
 			if not costs_dry_run():
 				card.move_to(cfc.NMAP.board, -1, board_position, tags)
-				yield(script.owner.get_tree().create_timer(0.05), "timeout")
+				await script.owner.get_tree().create_timer(0.05).timeout
 	return(retcode)
 
 
-# Task from modifying tokens on a card
+# Task from modifying tokens checked a card
 # * Supports [KEY_IS_COST](ScriptProperties#KEY_IS_COST).
 # * Can be affected by [Alterants](ScriptProperties#KEY_ALTERANTS).
 # * Requires the following keys:
@@ -405,7 +405,7 @@ func mod_tokens(script: ScriptTask) -> int:
 	if not set_to_mod:
 		alteration = _check_for_alterants(script, modification)
 		if alteration is GDScriptFunctionState:
-			alteration = yield(alteration, "completed")
+			alteration = await alteration.completed
 	var token_diff := 0
 	for card in script.subjects:
 		var current_tokens: int
@@ -432,7 +432,7 @@ func mod_tokens(script: ScriptTask) -> int:
 	return(retcode)
 
 
-# Task from creating a new card instance on the board
+# Task from creating a new card instance checked the board
 # * Can be affected by [Alterants](ScriptProperties#KEY_ALTERANTS)
 # * Requires the following keys:
 #	* [KEY_CARD_NAME](ScriptProperties#KEY_CARD_NAME): name of the Card as per card definitions
@@ -465,7 +465,7 @@ func spawn_card(script: ScriptTask) -> void:
 		count = script.get_property(SP.KEY_OBJECT_COUNT)
 	alteration = _check_for_alterants(script, count)
 	if alteration is GDScriptFunctionState:
-		alteration = yield(alteration, "completed")
+		alteration = await alteration.completed
 	var spawned_cards := []
 	if grid_name:
 		var grid: BoardPlacementGrid
@@ -475,11 +475,11 @@ func spawn_card(script: ScriptTask) -> void:
 			for _iter in range(count + alteration):
 				slot = grid.find_available_slot()
 				# We need a small delay, to allow a potential new slot to instance
-				yield(script.owner.get_tree().create_timer(0.05), "timeout")
+				await script.owner.get_tree().create_timer(0.05).timeout
 				if slot:
 					card = cfc.instance_card(canonical_name)
 					cfc.NMAP.board.add_child(card)
-					card.position = slot.rect_global_position
+					card.position = slot.global_position
 					card._placement_slot = slot
 					slot.occupying_card = card
 					card.state = Card.CardState.ON_PLAY_BOARD
@@ -502,7 +502,7 @@ func spawn_card(script: ScriptTask) -> void:
 	script.subjects = spawned_cards
 	# Adding a small delay to allow the cards to finish instancing and setting their
 	# properties
-	yield(script.owner.get_tree().create_timer(0.1), "timeout")
+	await script.owner.get_tree().create_timer(0.1).timeout
 
 
 # Task from creating a new card instance in a CardContainer
@@ -512,7 +512,7 @@ func spawn_card(script: ScriptTask) -> void:
 #		* [KEY_CARD_NAME](ScriptProperties#KEY_CARD_NAME): name of the Card as per card definitions
 #		* [KEY_CARD_FILTERS](ScriptProperties#KEY_CARD_FILTERS): A dictionary to pass to CardFilter to filter possible cards from the card pool
 #			if KEY_CARD_FILTERS is specified then the following key has to also be specified:
-#			* if [KEY_SELECTION_CHOICES_AMOUNT](ScriptProperties#KEY_SELECTION_CHOICES_AMOUNT): How to select cards based on the specified filters
+#			* if [KEY_SELECTION_CHOICES_AMOUNT](ScriptProperties#KEY_SELECTION_CHOICES_AMOUNT): How to select cards based checked the specified filters
 #	* [KEY_DEST_CONTAINER](ScriptProperties#KEY_DEST_CONTAINER): The container in which to place the created card
 # * Optionally uses the following keys:
 #	* [KEY_OBJECT_COUNT](ScriptProperties#KEY_OBJECT_COUNT)
@@ -549,7 +549,7 @@ func spawn_card_to_container(script: ScriptTask) -> void:
 			var select_return = cfc.ov_utils.select_card(
 					filtered_cards, 1, 'min', false, cfc.NMAP.board)
 			if select_return is GDScriptFunctionState: # Still working.
-				select_return = yield(select_return, "completed")
+				select_return = await select_return.completed
 			if typeof(select_return) == TYPE_ARRAY:
 				canonical_name = select_return[0]
 			else:
@@ -573,15 +573,15 @@ func spawn_card_to_container(script: ScriptTask) -> void:
 		count = script.get_property(SP.KEY_OBJECT_COUNT)
 	alteration = _check_for_alterants(script, count)
 	if alteration is GDScriptFunctionState:
-		alteration = yield(alteration, "completed")
+		alteration = await alteration.completed
 	var spawned_cards := []
 	for iter in range(count + alteration):
 		card = cfc.instance_card(canonical_name)
 		if not script.get_property(SP.KEY_IMMEDIATE_PLACEMENT):
 			cfc.NMAP.board.add_child(card)
 			card.scale = Vector2(0.1,0.1)
-			if 'rect_global_position' in script.owner:
-				card.global_position = script.owner.rect_global_position
+			if 'global_position' in script.owner:
+				card.global_position = script.owner.global_position
 			else:
 				card.global_position = script.owner.global_position
 			card.global_position.x += \
@@ -594,7 +594,7 @@ func spawn_card_to_container(script: ScriptTask) -> void:
 		# We set the drawn cards as the subjects, so that they can be
 		# used by other followup scripts
 		var yield_time = script.get_property(SP.KEY_YIELD_TIME)
-		yield(cfc.get_tree().create_timer(yield_time), "timeout")
+		await cfc.get_tree().create_timer(yield_time).timeout
 		spawned_cards.append(card)
 	script.subjects = spawned_cards
 
@@ -604,11 +604,11 @@ func spawn_card_to_container(script: ScriptTask) -> void:
 func shuffle_container(script: ScriptTask) -> void:
 	var container: CardContainer = cfc.NMAP[script.get_property(SP.KEY_DEST_CONTAINER).to_lower()]
 	while container.are_cards_still_animating():
-		yield(container.get_tree().create_timer(0.2), "timeout")
+		await container.get_tree().create_timer(0.2).timeout
 	container.shuffle_cards()
 	# If there's no shuffle aniumation, we will get stuck if we yield.
 	if container.is_in_group("piles") and container.shuffle_style != CFConst.ShuffleStyle.NONE:
-		yield(container, "shuffle_completed")
+		await container.shuffle_completed
 
 
 # Task from making the owner card an attachment to the subject card.
@@ -658,7 +658,7 @@ func modify_properties(script: ScriptTask) -> int:
 					# by the value of the per calculation
 					if SP.VALUE_PER in properties[property]:
 						var per_msg = perMessage.new(
-								# We remove any plus sign which marks
+								# We remove_at any plus sign which marks
 								# adjustment of property
 								properties[property].lstrip('+'),
 								script.owner,
@@ -670,7 +670,7 @@ func modify_properties(script: ScriptTask) -> int:
 								script.subjects,
 								script.prev_subjects)
 						modification = per_msg.found_things
-						# We cannot check for +/- using .is_valid_integer() because
+						# We cannot check for +/- using super.is_valid_int() because
 						# the value might be something like '+per_counter'
 						if '+' in properties[property] or '-' in properties[property]:
 							new_value = card.get_property(property)\
@@ -679,7 +679,7 @@ func modify_properties(script: ScriptTask) -> int:
 							new_value = modification
 					# if the value is not a per, then it might be a +/- adjustemnt
 					# which we only handle if the current card property is an actual integer
-					elif properties[property].is_valid_integer()\
+					elif properties[property].is_valid_int()\
 							and typeof(card.get_property(property)) == TYPE_INT:
 						modification = int(properties[property])
 						new_value = card.get_property(property) + modification
@@ -691,7 +691,7 @@ func modify_properties(script: ScriptTask) -> int:
 				else:
 					modification = properties[property]
 					new_value = modification
-				# We do not check for alterants on card numer properties
+				# We do not check for alterants checked card numer properties
 				# which are set as strings (e.g. things like 'X')
 				if typeof(card.get_property(property)) == TYPE_INT:
 					alteration = _check_for_property_alterants(
@@ -701,17 +701,17 @@ func modify_properties(script: ScriptTask) -> int:
 							modification,
 							property)
 					if alteration is GDScriptFunctionState:
-						alteration = yield(alteration, "completed")
+						alteration = await alteration.completed
 			# We set the value according to whatever was in the script
 			# which covers string and array values
 			# but integers will need some processing for alterants.
 			var value = properties[property]
-			# Alteration should work on both property sets and mods
+			# Alteration should work checked both property sets and mods
 			# Since mods are specified with a string (e.g. "+3")
 			# We need to convert the value + alteration into a string as well
 			if alteration != null:
 				value = modification + alteration
-				# We cannot check for +/- using .is_valid_integer() because
+				# We cannot check for +/- using super.is_valid_int() because
 				# the value might be something like '+per_counter'
 				if typeof(properties[property]) == TYPE_STRING\
 						and ('+' in properties[property] or '-' in properties[property]):
@@ -744,13 +744,13 @@ func modify_properties(script: ScriptTask) -> int:
 #	* [KEY_ASK_INTEGER_MIN](ScriptProperties#KEY_ASK_INTEGER_MIN)
 #	* [KEY_ASK_INTEGER_MAX](ScriptProperties#KEY_ASK_INTEGER_MAX)
 func ask_integer(script: ScriptTask) -> void:
-	var integer_dialog = _ASK_INTEGER_SCENE.instance()
+	var integer_dialog = _ASK_INTEGER_SCENE.instantiate()
 	# AskInteger tasks have to always provide a min and max value
 	var minimum = script.get_property(SP.KEY_ASK_INTEGER_MIN)
 	var maximum = script.get_property(SP.KEY_ASK_INTEGER_MAX)
 	integer_dialog.prep(script.owner.canonical_name, minimum, maximum)
 	# We have to wait until the player has finished selecting an option
-	yield(integer_dialog,"popup_hide")
+	await integer_dialog.popup_hide
 	stored_integer = integer_dialog.number
 	# Garbage cleanup
 	integer_dialog.queue_free()
@@ -758,7 +758,7 @@ func ask_integer(script: ScriptTask) -> void:
 
 # Adds a specified BoardPlacementGrid scene to the board at the specified position
 # * Requires the following keys:
-#	* [KEY_SCENE_PATH](ScriptProperties#KEY_SCENE_PATH): path to BoardPlacementGrid .tscn file
+#	* [KEY_SCENE_PATH](ScriptProperties#KEY_SCENE_PATH): path to BoardPlacementGrid super.tscn file
 #	* One of the following:
 #		* [KEY_BOARD_POSITION](ScriptProperties#KEY_BOARD_POSITION)
 #		* [KEY_GRID_NAME](ScriptProperties#KEY_GRID_NAME)
@@ -778,19 +778,19 @@ func add_grid(script: ScriptTask) -> void:
 	else:
 		count = script.get_property(SP.KEY_OBJECT_COUNT)
 	for iter in range(count):
-		var grid: BoardPlacementGrid = load(grid_scene).instance()
+		var grid: BoardPlacementGrid = load(grid_scene).instantiate()
 		# A small delay to allow the instance to be added
-		yield(script.owner.get_tree().create_timer(0.05), "timeout")
+		await script.owner.get_tree().create_timer(0.05).timeout
 		cfc.NMAP.board.add_child(grid)
 		# If the grid name is empty, we use the predefined names in the scene.
 		if grid_name != "":
 			grid.name = grid_name
 			grid.name_label.text = grid_name
-		grid.rect_position = board_position
+		grid.position = board_position
 		# If we're spawning more than 1 grid, we place the extra ones
 		# +1 card-width below, becase we assume they're spanwining with more
 		# than 1 column.
-		grid.rect_position.y += \
+		grid.position.y += \
 				iter * grid.card_size.y * grid.card_play_scale
 
 # Task for modifying a a counter.
@@ -831,7 +831,7 @@ func mod_counter(script: ScriptTask) -> int:
 	if not set_to_mod:
 		alteration = _check_for_alterants(script, modification)
 		if alteration is GDScriptFunctionState:
-			alteration = yield(alteration, "completed")
+			alteration = await alteration.completed
 	if script.get_property(SP.KEY_STORE_INTEGER):
 		var current_count = cfc.NMAP.board.counters.get_counter(
 				counter_name, script.owner)
@@ -851,7 +851,7 @@ func mod_counter(script: ScriptTask) -> int:
 	return(retcode)
 
 
-# Task for executing scripts on subject cards.
+# Task for executing scripts checked subject cards.
 # * Supports [KEY_IS_COST](ScriptProperties#KEY_IS_COST). If it is set, the cost check
 #	will fail, if any of the target card's cost checks also fail.
 # * Requires the following keys:
@@ -877,13 +877,13 @@ func execute_scripts(script: ScriptTask) -> int:
 			# We make sure we wait until the execution is finished
 			# before cleaning out the temp properties/counters
 			if sceng is GDScriptFunctionState:
-				sceng = yield(sceng, "completed")
-			# Executing scripts on other cards need to noy only check their
+				sceng = await sceng.completed
+			# Executing scripts checked other cards need to noy only check their
 			# own costs are possible, but the target cards as well
 			# but only if the subject is explictly specified, such as
 			# target. We don't want to play a card which will not affect its
 			# explicit target, but we do want to be able to play a card
-			# which, for example, tries to affect all cards on the table,
+			# which, for example, tries to affect all cards checked the table,
 			# but none of them is actually affected.
 			if sceng and not sceng.can_all_costs_be_paid\
 					and not script.get_property(SP.KEY_SUBJECT)\
@@ -908,17 +908,17 @@ func nested_script(script: ScriptTask) -> int:
 			script.owner,
 			script.trigger_object,
 			script.trigger_details)
-	# In case the script involves targetting, we need to wait on further
+	# In case the script involves targetting, we need to wait checked further
 	# execution until targetting has completed
 	sceng.execute(CFInt.RunType.COST_CHECK)
 	if not sceng.all_tasks_completed:
-		yield(sceng,"tasks_completed")
+		await sceng.tasks_completed
 	# If the dry-run of the ScriptingEngine returns that all
 	# costs can be paid, then we proceed with the actual run
 	if sceng.can_all_costs_be_paid:
 		sceng.execute()
 		if not sceng.all_tasks_completed:
-			yield(sceng,"tasks_completed")
+			await sceng.tasks_completed
 	# This will only trigger when costs could not be paid, and will
 	# execute the "is_else" tasks
 	elif not sceng.can_all_costs_be_paid:
@@ -948,7 +948,7 @@ func _check_for_alterants(script: ScriptTask, value: int, subject = null) -> int
 		value,
 		subject)
 	if alteration is GDScriptFunctionState:
-		alteration = yield(alteration, "completed")
+		alteration = await alteration.completed
 	return(alteration.value_alteration)
 
 
@@ -976,7 +976,7 @@ func _check_for_property_alterants(
 		script_def,
 		value)
 	if alteration is GDScriptFunctionState:
-		alteration = yield(alteration, "completed")
+		alteration = await alteration.completed
 	return(alteration.value_alteration)
 
 
@@ -996,7 +996,7 @@ func _retrieve_temp_modifiers(script: ScriptTask, type: String) -> Dictionary:
 			temp_modifiers[value] += script.get_property(SP.KEY_ADJUST_RETRIEVED_INTEGER)
 	return(temp_modifiers)
 
-# Extendable function to perform extra checks on the script
+# Extendable function to perform extra checks checked the script
 # according to game logic
 func _pre_task_exec(_script: ScriptTask) -> void:
 	pass

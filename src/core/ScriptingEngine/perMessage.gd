@@ -1,7 +1,7 @@
 # Contains details about the way to seek through the game for the 
 # Requested things to count. This is sent to ScriptPer to initiate it.
 class_name perMessage
-extends Reference
+extends RefCounted
 
 var per_seek: String
 var script_owner # Card type, but cannot type to avoid cyclic dependency
@@ -13,7 +13,11 @@ var subjects := []
 # These are the prev_subject which were sent to the task 
 # from which this per message originates
 var prev_subjects := []
-var found_things := 0 setget ,count_found_things
+var found_things := 0 :
+	get:
+		return found_things # TODOConverter40 Copy here content of count_found_things 
+	set(mod_value):
+		mod_value  # TODOConverter40  Non existent set function
 
 # Why do we send each element isolated, instead of just sending the ScriptTask object
 # from which we extract them directly, I hear you ask?  Because this class
@@ -45,11 +49,11 @@ func count_found_things() -> int:
 			"modifier", 0)
 	var per_discovery = cfc.script_per.new(self)
 #	if not per_discovery.has_init_completed:
-#		yield(per_discovery,"primed")
+#		await per_discovery.primed
 	found_count = per_discovery.return_per_count() + modifier
 	# We have to divide before we multiply because we fall back into an ingeger
 	# This allows us to code things like "for every 4 cards in the deck, do 2 damage"
-	# and return 4 damage on 11 cards, instead of 5.
+	# and return 4 damage checked 11 cards, instead of 5.
 	# If the game wants to handle something like "do 2 damage per decksize/3", then
 	# the script can float in the multiplier directly (e.g. put 2.0/3.0 as "multiplier")
 	found_count = int(float(found_count) / float(divider))

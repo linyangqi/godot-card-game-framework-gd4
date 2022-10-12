@@ -1,18 +1,30 @@
 # This class stores a filter for the Card Viewer 
 # and is responsible for doing comparisons of expressions
 class_name CVFilter
-extends Reference
+extends RefCounted
 
 # The property of a card this filter is checking against
-var property: String setget set_property
+var property: String :
+	get:
+		return property # TODOConverter40 Non existent get function 
+	set(mod_value):
+		mod_value  # TODOConverter40 Copy here content of set_property
 # an operator is either:
 # * : – equals
 # * ! – different from
 # * < – less than
 # * > – more than
-var operator: String setget set_operator
+var operator: String :
+	get:
+		return operator # TODOConverter40 Non existent get function 
+	set(mod_value):
+		mod_value  # TODOConverter40 Copy here content of set_operator
 # The expression can either be a integer, or a regex
-var expression setget set_expression
+var expression :
+	get:
+		return expression # TODOConverter40 Non existent get function 
+	set(mod_value):
+		mod_value  # TODOConverter40 Copy here content of set_expression
 # The type of filter this is. It will only be an int, if the 
 # property being compared is a number
 var type := "regex"
@@ -39,7 +51,7 @@ func set_operator(value) -> void:
 
 # Setter for expression var
 func set_expression(value: String) -> void:
-	if type == "int" and value.is_valid_integer():
+	if type == "int" and value.is_valid_int():
 		expression = int(value)
 	else:
 		var string_regex := RegEx.new()
@@ -62,7 +74,7 @@ func assess_card_object(card_object: CVListCardObject) -> bool:
 	# we allow number properties to get string values to give flexibility to the 
 	# designer, but we need to check for it to make proper comparisons
 	if property in CardConfig.PROPERTIES_NUMBERS\
-			and (typeof(prop_value) == TYPE_INT or typeof(prop_value) == TYPE_REAL):
+			and (typeof(prop_value) == TYPE_INT or typeof(prop_value) == TYPE_FLOAT):
 		if not CFUtils.compare_numbers(prop_value,expression,operator):
 			card_match = false
 	# For arrays, we want to return false, if none of the tags match the filter
@@ -79,7 +91,7 @@ func assess_card_object(card_object: CVListCardObject) -> bool:
 	return(card_match)
 
 
-# Compares regex based on the operator provided to this filter
+# Compares regex based checked the operator provided to this filter
 func compare_regex(value) -> bool:
 	var regex_match = true
 	if not expression.search(value) and operator == 'eq':

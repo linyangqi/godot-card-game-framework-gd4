@@ -3,7 +3,7 @@
 #
 # It also provides a few static functions for comparing filters
 class_name ScriptProperties
-extends Reference
+extends RefCounted
 
 
 #---------------------------------------------------------------------
@@ -44,10 +44,10 @@ const KEY_SUBJECT_V_SELF := "self"
 # tasks that do not match the triggers will be skipped
 # but the script will still pass its cost check
 # This allows the same trigger, to have different tasks firing, depending
-# on the trigger card.
+# checked the trigger card.
 const KEY_SUBJECT_V_TRIGGER := "trigger"
 # If this is the value of the [KEY_SUBJECT](#KEY_SUBJECT) key,
-# then we search all cards on the table
+# then we search all cards checked the table
 # by node order, and return candidates equal to
 # [KEY_SUBJECT_COUNT](#KEY_SUBJECT_COUNT) that match the filters.
 #
@@ -55,14 +55,14 @@ const KEY_SUBJECT_V_TRIGGER := "trigger"
 # the same time (e.g. "All Soldiers")
 const KEY_SUBJECT_V_BOARDSEEK := "boardseek"
 # If this is the value of the [KEY_SUBJECT](#KEY_SUBJECT) key,
-# then we search all cards on the specified
+# then we search all cards checked the specified
 # pile by node order, and pick the first candidate that matches the filter
 #
 # When this value is used [KEY_SRC_CONTAINER](KEY_SRC_CONTAINER)
 # has to also be used.
 const KEY_SUBJECT_V_TUTOR := "tutor"
 # If this is the value of the [KEY_SUBJECT](#KEY_SUBJECT) key,
-# then we pick the card on the specified
+# then we pick the card checked the specified
 # source pile by its index among other cards.
 #
 # When this value is used [KEY_SRC_CONTAINER](KEY_SRC_CONTAINER)
@@ -86,7 +86,7 @@ const KEY_FILTER_EACH_REVIOUS_SUBJECT := "filter_each_previous_subject"
 # If this is set, the subjects found by this task, will not overwrite the previous
 # subjects found by the previous task
 #
-# This is important in case the current task uses a filter on the subjects, but when the previous
+# This is important in case the current task uses a filter checked the subjects, but when the previous
 # subject doesn't march, we went to retain the previous subjects anyway for the next script in the line.
 # Without this flag, the previous subjects will be wiped (set to an empty array) as the filters didn't match.
 const KEY_PROTECT_PREVIOUS := "protect_previous"
@@ -169,7 +169,7 @@ const KEY_IS_COST := "is_cost"
 const KEY_NEEDS_SUBJECT := "needs_subject"
 # Value Type: bool (Default = false).
 #
-# This key is used on a task marked with KEY_IS_COST
+# This key is used checked a task marked with KEY_IS_COST
 # It means that its cost effects will not even be evaluated if previous costs
 # have already failed.
 # This is useful when there's more than 1 interactive cost,
@@ -188,7 +188,7 @@ const KEY_IS_ELSE := "is_else"
 # * "any" (default): Will execute regardless of the triggering card.
 #
 # Used when a script is triggered by a signal.
-# Limits the execution depending on the triggering card.
+# Limits the execution depending checked the triggering card.
 
 const KEY_TRIGGER := "trigger"
 # Value Type: int.
@@ -286,7 +286,7 @@ const KEY_BOARD_POSITION := "board_position"
 #
 # For `move_card_to_board` and `spawn_card`, if specified,
 # it will take priority over [KEY_BOARD_POSITION](#KEY_BOARD_POSITION)
-# The card will be placed to the specified grid on the board
+# The card will be placed to the specified grid checked the board
 #
 # For `add_grid`, if not specified, the grid will be keep the names
 # defined in the scene. If specified, the node name and label
@@ -407,7 +407,7 @@ const KEY_SELECTION_CHOICES_AMOUNT: = "selection_choices_amount"
 #
 # With this key, you can specify a number of keywords
 # you can assign to your script, which details what function it is serving.
-# These can be hooked on by the [AlterantEngine] and the [ScriptingEngine]
+# These can be hooked checked by the [AlterantEngine] and the [ScriptingEngine]
 # to figure out if this script effects should be altered or triggered.
 #
 # Tags specified with ScriptTasks will be injected along with list sent
@@ -451,7 +451,7 @@ const KEY_TAGS := "tags"
 #
 # The main difference from other scripts being that
 # triggers are checked inside each individual alterant task,
-# rather than on the whole script. This allows the same card
+# rather than checked the whole script. This allows the same card
 # to modify different sort of cards and triggers, in different ways.
 #
 # Currently the following tasks support being altered during runtime via alterants
@@ -467,11 +467,11 @@ const KEY_ALTERANTS := "alterants"
 # the currently performed task.
 #
 # It can accept a [VALUE_PER](#VALUE_PER) value which allows one to script an
-# effect like "Increase the cost by the number of Soldiers on the table"
+# effect like "Increase the cost by the number of Soldiers checked the table"
 const KEY_ALTERATION := "alteration"
 # This is a versatile value that can be inserted into any various keys
 # when a task needs to calculate the amount of subjects to look for
-# or the number of things to do, based on the state of the board at that point
+# or the number of things to do, based checked the state of the board at that point
 # in time.
 # The value has to be appended with the type of seek to do to determine
 # the amount. The full value has to match one of the following keys:
@@ -512,7 +512,7 @@ const KEY_ALTERATION := "alteration"
 #}
 #```
 # The above example can be tranlated to:
-# *"Draw 1 card for each card with 0 power on the board"*
+# *"Draw 1 card for each card with 0 power checked the board"*
 #
 # When used in modify_properties, the VALUE_PER can be appended by a plus sign as well
 #```
@@ -537,13 +537,13 @@ const VALUE_PER := "per_"
 #
 # Used to multiply per results.
 # This allows us to craft scripts like
-# "Gain 2 Health per card on the table"
+# "Gain 2 Health per card checked the table"
 const KEY_MULTIPLIER := "multiplier"
 # Value Type: Float/Int
 #
 # Used to divide per results.
 # This allows us to craft scripts like
-# "Gain 1 Health per two cards on the table"
+# "Gain 1 Health per two cards checked the table"
 const KEY_DIVIDER := "divider"
 # Value Type: String
 #
@@ -553,7 +553,7 @@ const KEY_DIVIDER := "divider"
 # When used this way, the property **has** to be a number.
 #
 # Also used by Alterant filters, to specify which property to compare against
-# When adjusting a property on-the-fly
+# When adjusting a property checked-the-fly
 const KEY_PROPERTY_NAME := "property_name"
 # Value Type: String (Default = "manual").
 #
@@ -574,7 +574,7 @@ const KEY_REQUIRE_EXEC_STATE := "require_exec_state"
 # to temporary alter the value of a counter by a specified amount.
 #
 # The value has to be a Dictionary where each key is an counter's name
-# and the value is the modification to use on that counter.
+# and the value is the modification to use checked that counter.
 const KEY_TEMP_MOD_COUNTERS := "temp_mod_counters"
 # Value Type: Dictionary
 #
@@ -584,24 +584,24 @@ const KEY_TEMP_MOD_COUNTERS := "temp_mod_counters"
 #
 # The value has to be a Dictionary where each key is an number property's name
 # As defined in [PROPERTIES_NUMBERS](CardConfig#PROPERTIES_NUMBERS)
-# and the value is the modification to use on that number
+# and the value is the modification to use checked that number
 const KEY_TEMP_MOD_PROPERTIES := "temp_mod_properties"
 # Value Type: Bool (Default = false)
 #
 # Used in the per dictionary to specify that the amount of things counted
 # should be returned negative.
-# This allows to have costs based on the boardstate
+# This allows to have costs based checked the boardstate
 const KEY_IS_INVERTED := "is_inverted"
 # Value Type: Dictionary
 #
-# A [VALUE_PER](#VALUE_PER) key for perfoming an effect equal to a number of tokens on the subject(s)
+# A [VALUE_PER](#VALUE_PER) key for perfoming an effect equal to a number of tokens checked the subject(s)
 #
 # Other than the subject defintions the [KEY_TOKEN_NAME](#KEY_TOKEN_NAME)
 # has to also be provided
 const KEY_PER_TOKEN := "per_token"
 # Value Type: Dictionary
 #
-# A [VALUE_PER](#VALUE_PER) key for perfoming an effect equal to a accumulated property on the subject(s)
+# A [VALUE_PER](#VALUE_PER) key for perfoming an effect equal to a accumulated property checked the subject(s)
 #
 # Other than the subject defintions the [KEY_PROPERTY_NAME](#KEY_PROPERTY_NAME)
 # has to also be provided. Obviously, the property specified has to be a number.
@@ -619,7 +619,7 @@ const KEY_PER_TUTOR := "per_tutor"
 # Value Type: Dictionary
 #
 # A [VALUE_PER](#VALUE_PER) key for perfoming an effect equal the number of
-# cards on the board matching a filter.
+# cards checked the board matching a filter.
 #
 # Typically the [KEY_SUBJECT_COUNT](#KEY_SUBJECT_COUNT)
 # inside this dictionary would be set to
@@ -651,7 +651,7 @@ const KEY_SORT_BY := "sort_by"
 const KEY_SORT_NAME := "sort_name"
 # Value Type: bool (default: false).
 #
-# If true, will invert the subject list sort order.
+# If true, will reverse the subject list sort order.
 const KEY_SORT_DESCENDING := "sort_descending"
 # Value Type: Dictionary
 #
@@ -768,7 +768,7 @@ const VALUE_COMPARE_WITH_TRIGGER := "compare_with_trigger"
 #	]}
 # ```
 # If you need to make a whole [state_exec](Card#get_state_exec) optional,
-# then you need to place it on the same level as the state_exec
+# then you need to place it checked the same level as the state_exec
 # and append the state_exec name
 # Example:
 # ```
@@ -864,7 +864,7 @@ const KEY_IMMEDIATE_PLACEMENT = "immediate_placement"
 # * "trigger": Will only filter cards triggering this effect via signals
 #	or cards triggering an alterant effect.
 # * "subject": Will only filter cards that are looked up as targets for the effect.
-# * "seek": Will only filter cards that are automatically sought on the board.
+# * "seek": Will only filter cards that are automatically sought checked the board.
 # * "tutor": Will only filter cards that are automaticaly sought in a pile.
 #
 # see [check_validity()](#check_validity-static)
@@ -910,7 +910,7 @@ const FILTER_STATE := "filter_state_"
 # Filter used for checking against the Card properties
 #
 # Each value is a dictionary where the  key is a card property, and the value
-# is the desired property value to match on the filtered card.
+# is the desired property value to match checked the filtered card.
 #
 # If the card property is numerical,
 # then the value can be a string.
@@ -966,7 +966,7 @@ const FILTER_COUNT_DIFFERENCE := "filter_count_difference"
 #
 # Filter used for checking in [check_state](#check_state)
 # It contains a list of dictionaries, each detailing a token state that
-# is wished on this subject. If any of them fails to match, then the whole
+# is wished checked this subject. If any of them fails to match, then the whole
 # filter fails to match.
 #
 # This allows us to check for multiple tokens at once. For example:
@@ -1042,7 +1042,7 @@ const FILTER_TOKENS := "filter_tokens"
 #	"trigger": "another"}
 #}
 # ```
-# The above example will only trigger on the "Type" property changing on
+# The above example will only trigger checked the "Type" property changing checked
 # another card, and only if it changed from "Green" to "Orange"
 const FILTER_MODIFIED_PROPERTIES := "filter_modified_properties"
 # Value Type: String.
@@ -1219,7 +1219,7 @@ const TRIGGER_COUNTER_NAME = "counter_name"
 # or from which it unattached
 const TRIGGER_HOST = "host"
 # Sent to the [AlterantEngine] by a task which allows alterations,
-# which allows a alterant cards to filter on whether to modify this value.
+# which allows a alterant cards to filter checked whether to modify this value.
 # See [FILTER_TASK](#FILTER_TASK).
 const TRIGGER_TASK_NAME = "task_name"
 
@@ -1429,7 +1429,7 @@ static func filter_trigger(
 
 	# Modified Property filter checks
 	# See FILTER_MODIFIED_PROPERTIES documentation
-	# If the trigger requires a filter on modified properties...
+	# If the trigger requires a filter checked modified properties...
 	if is_valid and card_scripts.get(FILTER_MODIFIED_PROPERTIES):
 		# Then the filter entry will always contain a dictionary.
 		# We extract that dictionary in mod_prop_dict.
@@ -1446,7 +1446,7 @@ static func filter_trigger(
 			# if the property changed that is mentioned in the signal
 			# matches the properties requested in the filter
 			# Then we also need to check if the filter specified
-			# filtering on specific new or old values as well
+			# filtering checked specific new or old values as well
 			# To do that, we extract the possible new/old values needed
 			# in the filter into mod_prop_values.
 			# The key is signal_modified_property and it will contain another
@@ -1477,7 +1477,7 @@ static func filter_trigger(
 				comparison_type):
 			is_valid = false
 
-	# Card Count on board filter check
+	# Card Count checked board filter check
 	if is_valid and card_scripts.get(FILTER_PER_BOARDSEEK):
 		var per_msg = perMessage.new(
 				KEY_PER_BOARDSEEK,
@@ -1524,7 +1524,7 @@ static func check_properties(card, property_filters: Dictionary) -> bool:
 		if property == KEY_COMPARISON:
 			continue
 		if property in CardConfig.PROPERTIES_ARRAYS:
-			# If it's an array, we assume they passed on element
+			# If it's an array, we assume they passed checked element
 			# of that array to check against the card properties
 			if not property_filters[property] in card.get_property(property)\
 					and comparison_type == "eq":
@@ -1609,7 +1609,7 @@ static func check_token_filter(card, token_states: Array) -> bool:
 	for token_state in token_states:
 		var comparison_default : String = get_default(KEY_COMPARISON)
 		# If the token count is not defined, we are awlays checking if there
-		# is any number of tokens of this type on this card
+		# is any number of tokens of this type checked this card
 		# Therefore it's effectively a "ge 1" comparison
 		if token_state.get(FILTER_COUNT) == null:
 			comparison_default = 'ge'
@@ -1660,8 +1660,8 @@ static func check_validity(card, card_scripts, type := "trigger") -> bool:
 	var card_matches := true
 	# We use the type of seek we're doing
 	# To know which dictionary property to pass for the required dict
-	# This way a script can be limited on more than one thing according to
-	# state. For example limit on the state of the trigger card
+	# This way a script can be limited checked more than one thing according to
+	# state. For example limit checked the state of the trigger card
 	# and the state of the subject cards.
 	if is_instance_valid(card) and card_scripts.get(FILTER_STATE + type):
 		# each "filter_state_" FILTER is an array.

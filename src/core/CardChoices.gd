@@ -1,4 +1,4 @@
-# Pops up a menu for the player to choose on of the card
+# Pops up a menu for the player to choose checked of the card
 # options
 extends PopupMenu
 
@@ -7,7 +7,7 @@ var selected_key: String
 
 # Called from Card.execute_scripts() when a card has multiple options.
 #
-# It prepares the menu items based on the dictionary keys and bring the
+# It prepares the menu items based checked the dictionary keys and bring the
 # popup to the front.
 func prep(title_reference: String, script_with_choices: Dictionary) -> void:
 		set_item_text(0, "Please choose option for " + title_reference)
@@ -21,8 +21,8 @@ func prep(title_reference: String, script_with_choices: Dictionary) -> void:
 		popup_centered()
 		# One again we need two different Panels due to 
 		# https://github.com/godotengine/godot/issues/32030
-		$HorizontalHighlights.rect_size = rect_size
-		$VecticalHighlights.rect_size = rect_size
+		$HorizontalHighlights.size = size
+		$VecticalHighlights.size = size
 		# We spawn the dialogue at the middle of the screen.
 
 func _on_CardChoices_id_pressed(id: int) -> void:

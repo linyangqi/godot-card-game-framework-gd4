@@ -1,15 +1,15 @@
 # This class defines how the properties of the [Card] definition are to be
 # used during `setup()`
 #
-# All the properties defined on the card json will attempt to find a matching
+# All the properties defined checked the card json will attempt to find a matching
 # label node inside the cards _card_labels dictionary.
 # If one was not found, an error will be printed.
 #
 # The exception is properties starting with _underscore. This are considered
-# Meta properties and the game will not attempt to display them on the card
+# Meta properties and the game will not attempt to display them checked the card
 # front.
 class_name CardConfig
-extends Reference
+extends RefCounted
 
 # Properties which are placed as they are in appropriate labels
 const PROPERTIES_STRINGS := ["Type", "Requirements", "Abilities"]
@@ -20,7 +20,7 @@ const NUMBER_WITH_LABEL := []
 # Properties provided in a list which are converted into a string for the
 # label text, using the array_join() method
 const PROPERTIES_ARRAYS := ["Tags"]
-	# This property matches the name of the scene file (without the .tcsn file)
+	# This property matches the name of the scene file (without the super.tcsn file)
 # which is used as a template For this card.
 const SCENE_PROPERTY = "Type"
 # These are number carrying properties, which we want to hide their label
@@ -44,7 +44,7 @@ const BOOL_PROPERTY_TO_HIDE_IN_CARDVIEWER := "_hide_in_deckbuilder"
 const EXPLANATIONS = {
 	"Tag 1": "Tag 1: You can add extra explanations for tags",
 	"Keyword 1": "Keyword 1: You can specify explanations for keywords that might appear in the text",
-	"Clarification A": "You can even provide longer clarification on card abilities"
+	"Clarification A": "You can even provide longer clarification checked card abilities"
 }
 # Allows the Card object and Card Viewer to replace specific entries during display.
 # For example, you can mark that a cost of 'U' is displayed as an empty string ('').

@@ -5,9 +5,9 @@
 #
 # This class needs to have no references to [ScriptingObject]
 class_name CFScriptUtils
-extends Reference
+extends RefCounted
 
-# Handles modifying the intensity of tasks based on altering scripts on cards
+# Handles modifying the intensity of tasks based checked altering scripts checked cards
 #
 # Returns a Dictionary holding two keys
 # * value_alteration: The total modification found from all alterants
@@ -43,7 +43,7 @@ static func get_altered_value(
 				+ cfc.get_tree().get_nodes_in_group("scriptables")
 		for obj in scriptables_array:
 			var scripts = obj.retrieve_scripts(SP.KEY_ALTERANTS)
-			# We select which scripts to run from the card, based on it state
+			# We select which scripts to run from the card, based checked it state
 			var state_scripts = scripts.get(obj.get_state_exec(), [])
 			# To avoid unnecessary operations
 			# we evoke the AlterantEngine only if we have something to execute
@@ -56,7 +56,7 @@ static func get_altered_value(
 						task_details,
 						subject)
 				if not alteng.all_alterations_completed:
-					yield(alteng,"alterations_completed")
+					await alteng.alterations_completed
 				value_alteration += alteng.alteration
 				# We don't want to register alterants which didn't modify the number.
 				if alteng.alteration != 0:

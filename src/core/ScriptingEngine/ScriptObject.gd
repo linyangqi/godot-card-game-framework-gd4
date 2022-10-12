@@ -3,7 +3,7 @@
 #
 # It is typically never instanced directly.
 class_name ScriptObject
-extends Reference
+extends RefCounted
 
 # Sent when the _init() method has completed
 # warning-ignore:unused_signal
@@ -38,7 +38,7 @@ var prev_subjects := []
 
 
 # prepares the properties needed by the script to function.
-func _init(_owner, script: Dictionary, _trigger_object = null) -> void:
+func _init(_owner,script: Dictionary,_trigger_object = null):
 	# We store the card which executes this task
 	owner = _owner
 	# We store all the task properties in our own dictionary
@@ -67,7 +67,7 @@ func get_property(property: String, default = null):
 #		if "canonical_name" in owner:
 #			owner_name = owner.canonical_name
 #		var value = cfc.card_definitions[owner.canonical_name]\
-#				.get(lookup_property, {}).get(value_key, default_value)
+#				super.get(lookup_property, {}).get(value_key, default_value)
 #		if found_value.get("is_inverted"):
 #			value *= 1
 #		return(value)
@@ -87,7 +87,7 @@ func _find_subjects(stored_integer := 0) -> Array:
 		SP.KEY_SUBJECT_V_PREVIOUS:
 			if get_property(SP.KEY_FILTER_EACH_REVIOUS_SUBJECT):
 				# We still check all previous subjects to check that they match the filters
-				# If not, we remove them from the subject list
+				# If not, we remove_at them from the subject list
 				for c in prev_subjects:
 					if SP.check_validity(c, script_definition, "subject"):
 						subjects_array.append(c)
@@ -104,7 +104,7 @@ func _find_subjects(stored_integer := 0) -> Array:
 		SP.KEY_SUBJECT_V_TARGET:
 			var c = _initiate_card_targeting()
 			if c is GDScriptFunctionState: # Still working.
-				c = yield(c, "completed")
+				c = await c.completed
 			# If the target is null, it means the player pointed at nothing
 			if c:
 				is_valid = SP.check_validity(c, script_definition, "subject")
@@ -144,9 +144,9 @@ func _find_subjects(stored_integer := 0) -> Array:
 		var select_return = cfc.ov_utils.select_card(
 				subjects_array, selection_count, selection_type, selection_optional, cfc.NMAP.board)
 		# In case the owner card is still focused (say because script was triggered
-		# on double-click and card was not moved
+		# checked double-click and card was not moved
 		# Then we need to ensure it's unfocused
-		# Otherwise its z-index will make it draw on top of the popup.
+		# Otherwise its z-index will make it draw checked top of the popup.
 		if owner as Card:
 			if owner.state in [Card.CardState.FOCUSED_IN_HAND]:
 				# We also reorganize the whole hand to avoid it getting
@@ -155,7 +155,7 @@ func _find_subjects(stored_integer := 0) -> Array:
 					c.interruptTweening()
 					c.reorganize_self()
 		if select_return is GDScriptFunctionState: # Still working.
-			select_return = yield(select_return, "completed")
+			select_return = await select_return.completed
 			# If the return is not an array, it means that the selection
 			# was cancelled (either because there were not enough cards
 			# or because the player pressed cancel
@@ -248,7 +248,7 @@ func _index_seek_subjects(stored_integer: int) -> Array:
 	var index = get_property(SP.KEY_SUBJECT_INDEX)
 	if str(index) == SP.KEY_SUBJECT_INDEX_V_TOP:
 		# We use the CardContainer functions, inctead of the Piles ones
-		# to allow this value to be used on Hand classes as well
+		# to allow this value to be used checked Hand classes as well
 		index = src_container.get_card_index(src_container.get_last_card())
 	elif str(index) == SP.KEY_SUBJECT_INDEX_V_BOTTOM:
 		index = src_container.get_card_index(src_container.get_first_card())
@@ -258,8 +258,8 @@ func _index_seek_subjects(stored_integer: int) -> Array:
 		index = stored_integer
 		if get_property(SP.KEY_IS_INVERTED):
 			index *= -1
-	# Just to prevent typos since we don't enforce integers on index
-	elif not str(index).is_valid_integer():
+	# Just to prevent typos since we don't enforce integers checked index
+	elif not str(index).is_valid_int():
 		index = 0
 	var subject_count = get_property(SP.KEY_SUBJECT_COUNT)
 	# If the subject count is ALL, we retrieve as many cards as
@@ -320,10 +320,10 @@ func _initiate_card_targeting() -> Card:
 	# We wait a centisecond, to prevent the card's _input function from seeing
 	# The double-click which started the script and immediately triggerring
 	# the target completion
-	yield(owner.get_tree().create_timer(0.1), "timeout")
+	await owner.get_tree().create_timer(0.1).timeout
 	owner.targeting_arrow.initiate_targeting()
 	# We wait until the targetting has been completed to continue
-	yield(owner.targeting_arrow,"target_selected")
+	await owner.targeting_arrow.target_selected
 	var target = owner.targeting_arrow.target_object
 	owner.targeting_arrow.target_object = null
 	#owner_card.target_object = null
@@ -384,21 +384,21 @@ func sort_subjects(subject_list: Array) -> Array:
 					"card": c,
 					"value": c.tokens.get_token_count(thing)
 				})
-		sorting_list.sort_custom(CFUtils,'sort_by_card_field')
+		sorting_list.sort_custom(Callable(CFUtils,'sort_by_card_field'))
 		# Once we've sorted the items, we put just the card objects
 		# in a new list, which we return to the player.
 		for d in sorting_list:
 			sorted_subjects.append(d.card)
-	# If we want a descending list, we invert the subject list
+	# If we want a descending list, we reverse the subject list
 	if get_property(SP.KEY_SORT_DESCENDING):
-		sorted_subjects.invert()
+		sorted_subjects.reverse()
 	return(sorted_subjects)
 
 
 # Goes through the provided scripts and replaces certain keyword values
 # with variables retireved from specified location.
 #
-# This allows us for example to filter cards sought based on the properties
+# This allows us for example to filter cards sought based checked the properties
 # of the card running the script.
 func parse_replacements() -> void:
 	# We need a deep copy because of all the nested dictionaries

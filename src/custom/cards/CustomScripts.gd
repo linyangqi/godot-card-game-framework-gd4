@@ -2,15 +2,15 @@
 #
 # The definition happens via object name
 class_name CustomScripts
-extends Reference
+extends RefCounted
 
 var costs_dry_run := false
 
-func _init(_dry_run) -> void:
+func _init(_dry_run):
 	costs_dry_run = _dry_run
 # This fuction executes custom scripts
 #
-# It relies on the definition of each script being based the object's name
+# It relies checked the definition of each script being based the object's name
 # Therefore the only thing we need, is the object itself to grab its name
 # And to have a self-reference in case it affects itself
 #

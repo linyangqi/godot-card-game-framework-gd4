@@ -36,9 +36,9 @@ extents = Vector2( 60, 96 )
 [node name="BoardPlacementSlot" type="Control" groups=[
 "placement_slot",
 ]]
-margin_right = 120.0
-margin_bottom = 192.0
-rect_min_size = Vector2( 120, 192 )
+offset_right = 120.0
+offset_bottom = 192.0
+minimum_size = Vector2( 120, 192 )
 script = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -48,9 +48,9 @@ __meta__ = {
 visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = -1130.0
-margin_bottom = -480.0
-rect_min_size = Vector2( 120, 192 )
+offset_right = -1130.0
+offset_bottom = -480.0
+minimum_size = Vector2( 120, 192 )
 mouse_filter = 2
 __meta__ = {
 "_edit_group_": true,
@@ -58,9 +58,9 @@ __meta__ = {
 }
 
 [node name="LeftRight" type="Panel" parent="Highlight"]
-margin_right = 120.0
-margin_bottom = 192.0
-rect_min_size = Vector2( 120, 192 )
+offset_right = 120.0
+offset_bottom = 192.0
+minimum_size = Vector2( 120, 192 )
 mouse_filter = 2
 custom_styles/panel = SubResource( 1 )
 __meta__ = {
@@ -69,8 +69,8 @@ __meta__ = {
 
 [node name="TopBottom" type="Panel" parent="Highlight"]
 modulate = Color( 1.8, 1.8, 1.8, 1 )
-margin_right = 120.0
-margin_bottom = 192.0
+offset_right = 120.0
+offset_bottom = 192.0
 mouse_filter = 2
 custom_styles/panel = SubResource( 2 )
 __meta__ = {

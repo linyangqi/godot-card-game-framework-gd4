@@ -8,15 +8,15 @@ class_name CVFilterLine
 extends LineEdit
 
 # Emited whenever the line text is changed. The deckbuilder grabs it and
-# filters the cards based on the compiled filters sent with it
+# filters the cards based checked the compiled filters sent with it
 signal filters_changed(filters)
 
 # Defines the available criteria for this game's filters.
 #
-# Developers can customize this dictionary based on each game's card properties
+# Developers can customize this dictionary based checked each game's card properties
 # Each character key defined here, corresponds to one property and when
 # inserted as the criteria, will check the expression against that property
-export var criteria_map = {
+@export var criteria_map = {
 	'a': 'Abilities',
 	't': 'Type',
 	'g': 'Tags',
@@ -30,7 +30,7 @@ var _filter_parse = RegEx.new()
 
 
 func _ready() -> void:
-	# This variable holds a regex group to check for criteria, based on the
+	# This variable holds a regex group to check for criteria, based checked the
 	# keys of criteria_map
 	var criteria_regex_group := ''
 	# This variable will hold the criteria legend
@@ -57,15 +57,15 @@ func _ready() -> void:
 			+ "< - less than\n"\
 			+ "> - greater than\n"
 	# warning-ignore:return_value_discarded
-	connect("text_changed", self, "on_text_changed")
+	connect("text_changed",Callable(self,"on_text_changed"))
 	# warning-ignore:return_value_discarded
-	connect("mouse_entered", self, "_on_FilterLine_mouse_entered")
+	connect("mouse_entered",Callable(self,"_on_FilterLine_mouse_entered"))
 	# warning-ignore:return_value_discarded
-	connect("mouse_exited", self, "_on_FilterLine_mouse_exited")
+	connect("mouse_exited",Callable(self,"_on_FilterLine_mouse_exited"))
 
 func _process(_delta: float) -> void:
 	if $Syntax.visible:
-		$Syntax.rect_position \
+		$Syntax.position \
 				= get_global_mouse_position() + Vector2(10,0)
 
 
@@ -79,7 +79,7 @@ func on_text_changed(new_text: String) -> void:
 # Function which takes as input a string, and then returns an array of
 # DBFilters.
 func compile_filters(line_text: String) -> Array:
-	# Our filter string is always split on spaces
+	# Our filter string is always split checked spaces
 	# We don't support spaces in expressions yet.
 	var filter_entries = line_text.to_lower().split(' ')
 	var filters := []
@@ -105,7 +105,7 @@ func compile_filters(line_text: String) -> Array:
 	return(filters)
 
 
-# Regenerates and returns the current filters based on the existing text
+# Regenerates and returns the current filters based checked the existing text
 func get_active_filters() -> Array:
 	return(compile_filters(text))
 

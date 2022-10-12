@@ -1,6 +1,6 @@
 # Class to compare card properties against a specified filter
 class_name CardFilter
-extends Reference
+extends RefCounted
 
 # The property key for which to look in the provided card properties dict
 var property: String
@@ -32,14 +32,14 @@ func _init(
 		printerr("ERROR:CardFilter: Cannot compare int as strings using comparison: %s. Defaulting to 'eq' instead" % [comparison])
 		comparison = 'eq'
 	if property in CardConfig.PROPERTIES_STRINGS and not comparison in ['eq', 'ne']:
-		printerr("ERROR:CardFilter: Cannot use comparisons other than 'eq' and 'ne' on string property: %s. Defaulting to 'eq' instead" % [property])
+		printerr("ERROR:CardFilter: Cannot use comparisons other than 'eq' and 'ne' checked string property: %s. Defaulting to 'eq' instead" % [property])
 		comparison = 'eq'
 	if property in CardConfig.PROPERTIES_STRINGS and typeof(filter) != TYPE_STRING:
 		printerr("WARN:CardFilter: Non-string filter '%s' requested for string property '%s'. This comparison would not be possible. '%s' will be converted to string for comparisons." % [filter, property, filter])
 		filter = str(filter)
 	if property in CardConfig.PROPERTIES_NUMBERS\
 			and typeof(filter) == TYPE_STRING\
-			and filter.is_valid_integer():
+			and filter.is_valid_int():
 		printerr("WARN:CardFilter: String filter '%s' provided for number property '%s'. This comparison would not be possible. '%s' will be converted to int for comparisons." % [filter, property, filter])
 		filter = int(filter)
 		
@@ -70,7 +70,7 @@ func check_card(card_properties: Dictionary) -> bool:
 				int(filter),
 				comparison):
 			card_matches = true
-	# A dictionary value is treated as an array, based on its keys
+	# A dictionary value is treated as an array, based checked its keys
 	elif typeof(prop_value) == TYPE_DICTIONARY:
 		if prop_value.has(filter) and comparison == 'eq':
 				card_matches = true
@@ -107,9 +107,9 @@ func check_card(card_properties: Dictionary) -> bool:
 			if  typeof(temp_filter) == TYPE_STRING and temp_filter in CardConfig.VALUES_TREATED_AS_ZERO:
 				temp_filter = 0
 		# If temp values are still strings, then we check if they're valid integers to compare them
-		if typeof(temp_prop_value) == TYPE_STRING and temp_prop_value.is_valid_integer():
+		if typeof(temp_prop_value) == TYPE_STRING and temp_prop_value.is_valid_int():
 			temp_prop_value = int(temp_prop_value)
-		if typeof(temp_filter) == TYPE_STRING and temp_filter.is_valid_integer():
+		if typeof(temp_filter) == TYPE_STRING and temp_filter.is_valid_int():
 			temp_filter = int(temp_filter)
 		if typeof(temp_prop_value) == TYPE_INT and  typeof(temp_filter) == TYPE_INT:
 			if CFUtils.compare_numbers(

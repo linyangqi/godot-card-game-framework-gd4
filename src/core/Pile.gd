@@ -12,45 +12,49 @@ var _has_cards := false
 
 # The pile's name. If this value is changed, it will change the
 # `pile_name_label` text.
-export(String) var pile_name : String setget set_pile_name
+@export var pile_name: String : String :
+	get:
+		return pile_name # TODOConverter40 Non existent get function 
+	set(mod_value):
+		mod_value  # TODOConverter40 Copy here content of set_pile_name
 # The shuffle style chosen for this pile. See CFConst.ShuffleStyle documentation.
-export(CFConst.ShuffleStyle) var shuffle_style = CFConst.ShuffleStyle.AUTO
-# If this is set to true, cards on this stack will be placed face-up.
+@export var shuffle_style = CFConst.ShuffleStyle.AUTO # (CFConst.ShuffleStyle)
+# If this is set to true, cards checked this stack will be placed face-up.
 # Otherwise they will be placed face-down.
-export var faceup_cards := false
+@export var faceup_cards := false
 # When true, when the cards are displayed in a popup, they will be sorted by name
 # and not in their actual order
-export var sorted_popup := false
+@export var sorted_popup := false
 
 
 # The popup node
-onready var pile_popup := $ViewPopup
-onready var _popup_grid := $ViewPopup/CardView
+@onready var pile_popup := $ViewPopup
+@onready var _popup_grid := $ViewPopup/CardView
 # Popup View button for Piles
-onready var view_button := $Control/ManipulationButtons/View
-onready var view_sorted_button := $Control/ManipulationButtons/ViewSorted
+@onready var view_button := $Control/ManipulationButtons/View
+@onready var view_sorted_button := $Control/ManipulationButtons/ViewSorted
 # The label node where the pile_name is written.
-onready var pile_name_label := $Control/CenterContainer/VBoxContainer/Label
+@onready var pile_name_label := $Control/CenterContainer/VBoxContainer/Label
 # The label node which shows the amount of cards in the pile.
-onready var card_count_label := $Control/CenterContainer/VBoxContainer\
+@onready var card_count_label := $Control/CenterContainer/VBoxContainer\
 		/PanelContainer/CenterContainer/CardCount
 
 # The popup node
-onready var _opacity_tween := $OpacityTween
-onready var _tween := $Tween
+@onready var _opacity_tween := $OpacityTween
+@onready var _tween := $Tween
 
 var pre_sorted_order: Array
 
 func _ready():
 	add_to_group("piles")
 	# warning-ignore:return_value_discarded
-	view_button.connect("pressed",self,'_on_View_Button_pressed')
+	view_button.connect("pressed",Callable(self,'_on_View_Button_pressed'))
 	# warning-ignore:return_value_discarded
-	view_sorted_button.connect("pressed",self,'_on_ViewSorted_Button_pressed')
+	view_sorted_button.connect("pressed",Callable(self,'_on_ViewSorted_Button_pressed'))
 	# warning-ignore:return_value_discarded
-	$ViewPopup.connect("popup_hide",self,'_on_ViewPopup_popup_hide')
+	$ViewPopup.connect("popup_hide",Callable(self,'_on_ViewPopup_popup_hide'))
 	# warning-ignore:return_value_discarded
-	$ViewPopup.connect("about_to_show",self,'_on_ViewPopup_about_to_show')
+	$ViewPopup.connect("about_to_popup",Callable(self,'_on_ViewPopup_about_to_show'))
 	set_pile_name(pile_name)
 	# warning-ignore:return_value_discarded
 	connect(
@@ -110,7 +114,7 @@ func _on_ViewPopup_popup_hide() -> void:
 			Color(1,1,1,1), Color(1,1,1,0), 0.5,
 			Tween.TRANS_EXPO, Tween.EASE_OUT)
 	$ViewPopup/Tween.start()
-	yield($ViewPopup/Tween, "tween_all_completed")
+	await $ViewPopup/Tween.tween_all_completed
 	for card in pre_sorted_order:
 		# For each card we have hosted, we check if it's hosted in the popup.
 		# If it is, we move it to the root.
@@ -142,12 +146,12 @@ func populate_popup(sorted:= sorted_popup) -> void:
 	manipulation_buttons.visible = false
 	# We set the size of the grid to hold slightly scaled-down cards
 	var card_array := get_all_cards(false)
-	card_array.invert()
+	card_array.reverse()
 	pre_sorted_order = get_all_cards()
 	if sorted:
-		card_array.sort_custom(CFUtils, "sort_scriptables_by_name")
+		card_array.sort_custom(Callable(CFUtils,"sort_scriptables_by_name"))
 	for card in card_array:
-		# We remove the card to rehost it in the popup grid container
+		# We remove_at the card to rehost it in the popup grid container
 		remove_child(card)
 		_slot_card_into_popup(card)
 	# Finally we Pop the Up :)
@@ -180,17 +184,17 @@ func set_pile_name(value: String) -> void:
 # directly there in that case.
 func add_child(node, _legible_unique_name=false) -> void:
 	if not $ViewPopup.visible:
-		.add_child(node)
+		super.add_child(node)
 		if node as Card:
 			_has_cards = true
 			# By raising the $Control every time a card is added
-			# we ensure it's always drawn on top of the card objects
+			# we ensure it's always drawn checked top of the card objects
 			$Control.raise()
 			# If this was the first card which enterred this pile
 			# We hide the pile "floor" by making it transparent
 			if get_card_count() >= 1:
 				if not _opacity_tween.is_active():
-					_opacity_tween.remove($Control,'self_modulate:a')
+					_opacity_tween.remove_at($Control,'self_modulate:a')
 					_opacity_tween.interpolate_property($Control,'self_modulate:a',
 							$Control.self_modulate.a, 0.0, 1,
 							Tween.TRANS_SINE, Tween.EASE_OUT)
@@ -206,7 +210,7 @@ func add_child(node, _legible_unique_name=false) -> void:
 # when a Card class is removed. In that case it also shows
 # this container's "floor" if it was the last card in the pile.
 func remove_child(node, _legible_unique_name=false) -> void:
-	.remove_child(node)
+	super.remove_child(node)
 	card_count_label.text = str(get_card_count())
 	# When we put the first card in the pile, we make sure the
 	# Panel is made transparent so that the card backs are seen instead
@@ -214,7 +218,7 @@ func remove_child(node, _legible_unique_name=false) -> void:
 		_has_cards = false
 		reorganize_stack()
 		if not _opacity_tween.is_active():
-			_opacity_tween.remove($Control,'self_modulate:a')
+			_opacity_tween.remove_at($Control,'self_modulate:a')
 			_opacity_tween.interpolate_property($Control,'self_modulate:a',
 					$Control.self_modulate.a, 0.4, 0.5,
 					Tween.TRANS_SINE, Tween.EASE_IN)
@@ -224,43 +228,43 @@ func remove_child(node, _legible_unique_name=false) -> void:
 
 
 # Rearranges the position of the contained cards slightly
-# so that they appear to be stacked on top of each other
+# so that they appear to be stacked checked top of each other
 func reorganize_stack() -> void:
 	if are_cards_still_animating():
 		return
 #	while are_cards_still_animating():
-#		yield(get_tree().create_timer(0.3), "timeout")
+#		await get_tree().create_timer(0.3).timeout
 	for c in get_all_cards():
 		if c.position != get_stack_position(c):
 			c.position = get_stack_position(c)
 	# The size of the panel has to be modified to be as large as the size
 	# of the card stack
-	# TODO: This logic has to be adapted depending on where on the viewport
+	# TODO: This logic has to be adapted depending checked where checked the viewport
 	# This pile is anchored. The below calculations assume bottom-left.
-	$Control.rect_size = Vector2(card_size.x + 3 + _shift_x() * get_card_count(),
+	$Control.size = Vector2(card_size.x + 3 + _shift_x() * get_card_count(),
 			card_size.y + 6 + _shift_y() * get_card_count())
-	$Control/Highlight.rect_size = $Control.rect_size
+	$Control/Highlight.size = $Control.size
 	# The highlight has to also be shifted higher or else it will just extend
 	# below the viewport
-#	$Control/Highlight.rect_position.y = -get_card_count()
-	.re_place()
+#	$Control/Highlight.position.y = -get_card_count()
+	super.re_place()
 	# since we're adding cards towards the top, we do not want the re_place()
 	# function to push the pile higher than the edge of the screen
 	# it is supposed to be
-	$Control.rect_position = Vector2(0,0)
-	$Control.rect_position.y -= get_card_count()
+	$Control.position = Vector2(0,0)
+	$Control.position.y -= get_card_count()
 	if "top" in get_groups():
 		position.y += get_card_count() * _shift_y()
 	if "right" in get_groups():
 		position.x -= get_card_count() * _shift_x()
-	$CollisionShape2D.shape.extents = $Control.rect_size / 2
-	$CollisionShape2D.position = $Control.rect_position + $Control.rect_size /2
+	$CollisionShape2D.shape.extents = $Control.size / 2
+	$CollisionShape2D.position = $Control.position + $Control.size /2
 
 
 # Override the godot builtin move_child() method,
-# to make sure the $Control node is always drawn on top of Card nodes
+# to make sure the $Control node is always drawn checked top of Card nodes
 func move_child(child_node, to_position) -> void:
-	.move_child(child_node, to_position)
+	super.move_child(child_node, to_position)
 	$Control.raise()
 
 # The top position of a pile, is always the lowest
@@ -318,7 +322,7 @@ func _slot_card_into_popup(card: Card) -> void:
 	card_slot.set_name("CardPopUpSlot")
 	# We set the control container size to be equal
 	# to the card size to which the card will scale.
-	card_slot.rect_min_size = card.get_node("Control").rect_min_size * card.scale
+	card_slot.minimum_size = card.get_node("Control").minimum_size * card.scale
 	$ViewPopup/CardView.add_child(card_slot)
 	# Finally, the card is added to the temporary control node parent.
 	card_slot.add_child(card)
@@ -333,7 +337,7 @@ func _slot_card_into_popup(card: Card) -> void:
 func shuffle_cards(animate = true) -> void:
 	# Optimally the CFConst.ShuffleStyle enum should be defined in this class
 	# but if we did so, we would not be able to refer to it from the Card
-	# class, as that would cause a cyclic dependency on the parser
+	# class, as that would cause a cyclic dependency checked the parser
 	# So we've placed it in CFConst instead.
 	if not _tween.is_active() \
 			and animate \
@@ -343,8 +347,8 @@ func shuffle_cards(animate = true) -> void:
 		var init_position = position
 		# The following calculation figures out the direction
 		# towards the center of the viewport from the center of the card
-		var shuffle_direction = (global_position + $Control.rect_size/2)\
-				.direction_to(get_viewport().size / 2)
+		var shuffle_direction = (global_position + $Control.size/2)\
+				super.direction_to(get_viewport().size / 2)
 		# We increase the intensity of the y direction, to make the shuffle
 		# position move higher up or down respective to its position.
 		shuffle_direction.y *= 2
@@ -352,8 +356,8 @@ func shuffle_cards(animate = true) -> void:
 		# It can be overriden in each shuffle definition
 		var shuffle_position = position + shuffle_direction * 300
 		# Angle of the container when shuffling
-		# The below calculation will be 10 if the card is on the left
-		# or 10 if the card is on the right of the viewport center.
+		# The below calculation will be 10 if the card is checked the left
+		# or 10 if the card is checked the right of the viewport center.
 		var shuffle_rotation = (shuffle_position.x - position.x) \
 				/ abs(shuffle_position.x - position.x) * 10
 		# To make sure the shuffle draws above other objects
@@ -385,7 +389,7 @@ func shuffle_cards(animate = true) -> void:
 			_add_tween_rotation(rotation_degrees,shuffle_rotation,0.2)
 			_tween.start()
 			# We move the pile to a more central location to see the anim
-			yield(_tween, "tween_all_completed")
+			await _tween.tween_all_completed
 			# The animation speeds have been empirically tested to look good
 			next_card_speed = 0.05 - 0.002 * card_count
 			if next_card_speed < 0.01:
@@ -397,19 +401,19 @@ func shuffle_cards(animate = true) -> void:
 			CFUtils.shuffle_array(random_cards)
 			for card in random_cards:
 				card.animate_shuffle(anim_speed,CFConst.ShuffleStyle.CORGI)
-				yield(get_tree().create_timer(next_card_speed), "timeout")
+				await get_tree().create_timer(next_card_speed).timeout
 			# This is where the shuffle actually happens
 			# The effect looks like the cards shuffle in the middle of their
 			# animations
-			.shuffle_cards()
+			super.shuffle_cards()
 			# This wait gives the carde enough time to return to
 			# their original position.
-			yield(get_tree().create_timer(anim_speed * 2.5), "timeout")
+			await get_tree().create_timer(anim_speed * 2.5).timeout
 		elif style == CFConst.ShuffleStyle.SPLASH:
 			_add_tween_position(position,shuffle_position,0.2)
 			_add_tween_rotation(rotation_degrees,shuffle_rotation,0.2)
 			_tween.start()
-			yield(_tween, "tween_all_completed")
+			await _tween.tween_all_completed
 			# The animation speeds have been empirically tested to look good
 			anim_speed = 0.6
 			for card in get_all_cards():
@@ -417,21 +421,21 @@ func shuffle_cards(animate = true) -> void:
 			# This has been timed to "splash" the cards at the exact moment
 			# The shuffle happens, which makes the z-index change
 			# unnoticeable to the player
-			yield(get_tree().create_timer(anim_speed - 0.5), "timeout")
-			.shuffle_cards()
+			await get_tree().create_timer(anim_speed - 0.5).timeout
+			super.shuffle_cards()
 			# The extra time is to give the cards enough time to return
 			# To the starting location, and let reorganize_stack() do its magic
-			yield(get_tree().create_timer(anim_speed + 0.6), "timeout")
+			await get_tree().create_timer(anim_speed + 0.6).timeout
 		elif style == CFConst.ShuffleStyle.SNAP:
 			_add_tween_position(position,shuffle_position,0.2)
 			_add_tween_rotation(rotation_degrees,shuffle_rotation,0.2)
 			_tween.start()
-			yield(_tween, "tween_all_completed")
+			await _tween.tween_all_completed
 			anim_speed = 0.2
 			var card = get_random_card()
 			card.animate_shuffle(anim_speed, CFConst.ShuffleStyle.SNAP)
-			yield(get_tree().create_timer(anim_speed * 2.5), "timeout")
-			.shuffle_cards()
+			await get_tree().create_timer(anim_speed * 2.5).timeout
+			super.shuffle_cards()
 		elif style == CFConst.ShuffleStyle.OVERHAND:
 			anim_speed = 0.15
 			for _i in range(3):
@@ -445,10 +449,10 @@ func shuffle_cards(animate = true) -> void:
 				random_cards.resize(random_cards.size() / resize_div)
 				for card in random_cards:
 					card.animate_shuffle(anim_speed, CFConst.ShuffleStyle.OVERHAND)
-				yield(get_tree().create_timer(anim_speed * 2.3), "timeout")
+				await get_tree().create_timer(anim_speed * 2.3).timeout
 				# The shuffle after every jump in a face-up pile
 				# really sells it :)
-				.shuffle_cards()
+				super.shuffle_cards()
 				reorganize_stack()
 		if position != init_position:
 			_add_tween_position(position,init_position,0.2)
@@ -457,7 +461,7 @@ func shuffle_cards(animate = true) -> void:
 		z_index = 0
 	else:
 		# if we're already running another animation, just shuffle
-		.shuffle_cards()
+		super.shuffle_cards()
 	reorganize_stack()
 	emit_signal("shuffle_completed", self)
 
@@ -465,7 +469,7 @@ func shuffle_cards(animate = true) -> void:
 # Overrides the re_place() function of [Pile] in order
 # to also restack the cards
 func re_place() -> void:
-	# reorganize_stack() calls .re_place() at the end
+	# reorganize_stack() calls super.re_place() at the end
 	reorganize_stack()
 
 
@@ -476,7 +480,7 @@ func _add_tween_rotation(
 		runtime := 0.3,
 		trans_type = Tween.TRANS_BACK,
 		ease_type = Tween.EASE_IN_OUT):
-	_tween.remove(self,'rotation_degrees')
+	_tween.remove_at(self,'rotation_degrees')
 	_tween.interpolate_property(self,'rotation_degrees',
 			expected_rotation, target_rotation, runtime,
 			trans_type, ease_type)
@@ -489,7 +493,7 @@ func _add_tween_position(
 		runtime := 0.3,
 		trans_type = Tween.TRANS_CUBIC,
 		ease_type = Tween.EASE_OUT):
-	_tween.remove(self,'position')
+	_tween.remove_at(self,'position')
 	_tween.interpolate_property(self,'position',
 			expected_position, target_position, runtime,
 			trans_type, ease_type)

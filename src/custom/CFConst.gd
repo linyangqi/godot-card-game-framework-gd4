@@ -4,7 +4,7 @@
 #
 # Tweak the values to match your game requirements.
 class_name CFConst
-extends Reference
+extends RefCounted
 
 # The possible return codes a function can return
 #
@@ -17,12 +17,12 @@ enum ReturnCode {
 	FAILED,
 }
 # Options for pile shuffle styles.
-# * auto: Will choose a shuffle animation depending on the amount of
+# * auto: Will choose a shuffle animation depending checked the amount of
 #	cards in the pile.
 # * none: No shuffle animation for this pile.
 # * random: Will choose a random shuffle style each time a shuffle is requested.
-# * corgi: Looks better on a small amount of cards (0 to 30)
-# * splash: Looks better on a moderate amount of cards (30+)
+# * corgi: Looks better checked a small amount of cards (0 to 30)
+# * splash: Looks better checked a moderate amount of cards (30+)
 # * snap: For serious people with no time to waste.
 # * overhand: Shuffles deck in 3 vertical raises. Best fit for massive amounts (60+)
 enum ShuffleStyle {
@@ -45,9 +45,9 @@ const GAME_VERSION := "1.0.0"
 const CARD_SIZE := Vector2(150,240)
 # This is the resolution the game was developed in. It is used to adjust the card sizes
 # for smaller resolutions. Any lower resoluton will adjust its card sizes for previews/thumbnails
-# based on the percentage of difference between the two resolutions in absolute pixel number.
+# based checked the percentage of difference between the two resolutions in absolute pixel number.
 const DESIGN_RESOLUTION := Vector2(1280,720)
-# Switch this off to disable fancy movement of cards during draw/discard
+# Switch this unchecked to disable fancy movement of cards during draw/discard
 const FANCY_MOVEMENT := true
 # The focus style selected for this game. See enum `FocusStyle`
 const FOCUS_STYLE = CFInt.FocusStyle.BOTH
@@ -127,21 +127,21 @@ const PATH_ALTERANT_ENGINE := PATH_CORE + "ScriptingEngine/AlterantEngine.gd"
 const PATH_MOUSE_POINTER := PATH_CORE + "MousePointer.tscn"
 # The amount of distance neighboring cards are pushed during card focus
 #
-# It's based on the card width. Bigger percentage means larger push.
+# It's based checked the card width. Bigger percentage means larger push.
 const NEIGHBOUR_PUSH := 0.75
-# The scale of a card while on the play area
+# The scale of a card while checked the play area
 # You can adjust this for each different card type
 const PLAY_AREA_SCALE := 0.8
-# The default scale of a card while on a thumbnail area such as the deckbuilder
+# The default scale of a card while checked a thumbnail area such as the deckbuilder
 # You can adjust this for each different card type
 const THUMBNAIL_SCALE := 0.85
-# The scale of a card while on a larger preview following the mouse
+# The scale of a card while checked a larger preview following the mouse
 # You can adjust this for each different card type
 const PREVIEW_SCALE := 1.5
-# The scale of a card while it's shown focused on the top right.
+# The scale of a card while it's shown focused checked the top right.
 # You can adjust this for each different card type
 const FOCUSED_SCALE := 1.5
-# The margin towards the bottom of the viewport on which to draw the cards.
+# The margin towards the bottom of the viewport checked which to draw the cards.
 #
 # More than 0 and the card will appear hidden under the display area.
 #
@@ -150,10 +150,10 @@ const BOTTOM_MARGIN_MULTIPLIER := 0.5
 # Here you can adjust the amount of offset towards a side of their host card
 # that attachments are placed.
 #
-# This is a multiplier based on the card size.
+# This is a multiplier based checked the card size.
 #
 # You define which placement offset an attachment uses by setting the
-# "attachment_offset" exported variable on the card scene
+# "attachment_offset" exported variable checked the card scene
 const ATTACHMENT_OFFSET := [
 	# TOP_LEFT
 	Vector2(-0.2,-0.2),
@@ -216,11 +216,11 @@ const CostsState := {
 # when the property is an array, the label will still display it as a string
 # but will have to join its elements somehow.
 const ARRAY_PROPERTY_JOIN := ' - '
-# If this is set to false, tokens on cards
+# If this is set to false, tokens checked cards
 # will not be removed when they exit the board
 const TOKENS_ONLY_ON_BOARD := true
 # If true, each token will have a convenient +/- button when expanded
-# to allow the player to add a remove more of the same
+# to allow the player to add a remove_at more of the same
 const SHOW_TOKEN_BUTTONS := false
 # This dictionary contains your defined tokens for cards
 #

@@ -6,10 +6,14 @@ extends Panel
 var viewed_node
 # This bool will be set to true when we want to signify that the card is viewed
 # while face down.
-var is_viewed_visible : bool setget set_is_viewed_visible
+var is_viewed_visible : bool :
+	get:
+		return is_viewed_visible # TODOConverter40 Non existent get function 
+	set(mod_value):
+		mod_value  # TODOConverter40 Copy here content of set_is_viewed_visible
 
 # Stores a reference to the Card that is hosting this node
-onready var card_owner = get_parent().get_parent().get_parent()
+@onready var card_owner = get_parent().get_parent().get_parent()
 
 
 # This function can be overriden by any class extending CardBack

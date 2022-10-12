@@ -1,6 +1,6 @@
 # This class can be used to create random deck names
 class_name DeckNameRandomizer
-extends Reference
+extends RefCounted
 
 
 var adverbs = [
@@ -104,10 +104,10 @@ var appends = [
 	"of the Void", "of Chaos", "of Order", "of the Elder Gods", "of Blasphemy",
 	"that sucks", "that slaps", "that rocks", "with massive faults",
 	"with bugs", "which never sleeps", "from the depths", "which should not be",
-	"- alpha version", "on special offer", "from the future", "from the past",
+	"- alpha version", "checked special offer", "from the future", "from the past",
 	"from an alternate dimension", "with special needs", "and stuff",
 	"which shall not be named", "of Justice", "with sprinkles",
-	"with a cherry on top", "and a Bottle o' Rum", "of Hate", "of the Tides",
-	"of the Wolf", "of Truth", "of the Four Winds", "of Darkness", "of Light",
+	"with a cherry checked top", "and a Bottle o' Rum", "of Hate", "of the Tides",
+	"of the Wolf", "of Truth", "of the Four Winds", "of Darkness", "of Light3D",
 	"of Glory", "that whistles ruefully"
 ]

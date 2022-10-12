@@ -17,7 +17,7 @@ func before_each():
 	}
 #	var confirm_return = setup_board()
 #	if confirm_return is GDScriptFunctionState: # Still working.
-#		confirm_return = yield(confirm_return, "completed")
+#		confirm_return = await confirm_return.completed
 
 func test_init() -> void:
 	var cf = CardFilter.new('Type', 'Blue')
@@ -177,13 +177,13 @@ func test_int_to_int_string_comparison() -> void:
 	var cf = CardFilter.new('Power', 2, 'le')
 	comparison_dict.Power = '1'
 	assert_true(cf.check_card(comparison_dict),
-			"Int-String comparison handled property on le")
+			"Int-String comparison handled property checked le")
 	comparison_dict.Power = '2'
 	assert_true(cf.check_card(comparison_dict),
-			"Int-String comparison handled property on le")
+			"Int-String comparison handled property checked le")
 	comparison_dict.Power = '3'
 	assert_false(cf.check_card(comparison_dict),
-			"Int-String comparison handled property on le")
+			"Int-String comparison handled property checked le")
 
 func test_null_to_int_comparison() -> void:
 	var cf = CardFilter.new('Power', null, 'le')
